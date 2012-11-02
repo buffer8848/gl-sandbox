@@ -1,6 +1,5 @@
 #include <windows.h>
-#include <Wingdi.h>
-#include <gl/gl.h>
+#include <wingdi.h>
 const char g_szClassName[] = "myWindowClass";
 
 // Step 4: the Window Procedure
@@ -107,6 +106,9 @@ bool SetupPixels(HWND hwnd)
 
     HDC dc = GetDC(hwnd);
     int pixelFormat = ChoosePixelFormat(dc, &pfd);
+	
+	if(pixelFormat == 0)
+		return false;
 
 	return (SetPixelFormat(dc, pixelFormat, &pfd)) ? true : false;
 }
