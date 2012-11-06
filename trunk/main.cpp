@@ -1,6 +1,12 @@
 #include <windows.h>
 #include <wingdi.h>
+#include "GLShader.h"
+#include "DbgConsole.h"
+#include "GLRenderer.h"
+#include <iostream>
+#include <fstream>
 const char g_szClassName[] = "myWindowClass";
+GLRenderer renderer;
 
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -13,6 +19,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
             PostQuitMessage(0);
         break;
+		case WM_SIZE:
+			renderer.Reshape(LOWORD(lParam), HIWORD(lParam));
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
@@ -25,6 +33,8 @@ bool SetupPixels(HWND hwnd);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow)
 {
+	RedirectIOToConsole();
+
     WNDCLASSEX wc;
     HWND hwnd;
     MSG Msg;
@@ -72,12 +82,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
+	
+    HDC dc = GetDC(hwnd);
+
+	if(renderer.CreateGLContext(&dc))
+	{
+		std::cout << "Created gl context successfully\n";
+	}else{
+		std::cout << "Could not create gl context!\n";
+	}
+
+	renderer.PrepareScene();
 
     // Step 3: The Message Loop
     while(GetMessage(&Msg, NULL, 0, 0) > 0)
     {
         TranslateMessage(&Msg);
         DispatchMessage(&Msg);
+
+		renderer.DrawScene(&dc);
     }
     return Msg.wParam;
 }
